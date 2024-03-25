@@ -189,7 +189,7 @@ body {
   border-radius: 35px;
   outline: none;
   border: none;
-  padding: 15px 15px 15px 15px;
+  padding: 15px 35px 15px 35px;
   background: azure;
   width: 100%;
   font-weight: 600;
@@ -316,10 +316,10 @@ h1 {
 
 .weekday-section {
   display: grid;
-  grid-template-columns: 100px 70px 30px 50px 10px 30px;
+  grid-template-columns: 90px 60px 30px 40px 10px 30px;
   align-items: center;
   justify-content: center;
-  column-gap: 5px;
+  column-gap: 10px;
 }
 
 @media screen and (min-width: 1087px) {
