@@ -82,7 +82,7 @@ body {
   padding: 15px;
   color: azure;
   margin-top: 20px;
-  width: 93%;
+  width: 97%;
 }
 
 .card:hover {
@@ -316,7 +316,7 @@ h1 {
 
 .weekday-section {
   display: grid;
-  grid-template-columns: 90px 60px 30px 40px 10px 30px;
+  grid-template-columns: 90px 60px 30px 40px 10px 40px;
   align-items: center;
   justify-content: center;
   column-gap: 10px;
