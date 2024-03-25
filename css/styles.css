@@ -71,18 +71,18 @@ body {
   justify-content: center;
   align-items: center;
   margin-top: 50px;
-  width: 95%;
+  width: 97%;
 }
 
 /* Card */
 
 .card {
-  width: 93%;
   background: rgba(25, 25, 112, 0.5);
   border-radius: 10px;
   padding: 15px;
   color: azure;
   margin-top: 20px;
+  width: 93%;
 }
 
 .card:hover {
@@ -174,28 +174,30 @@ body {
 .card__search {
   display: flex;
   flex-direction: column;
-  gap: 40px;
-  height: 300px;
+  align-items: center;
+  padding-bottom: 70px;
+  gap: 30px;
 }
 
 .search-container {
   display: flex;
   flex-direction: row;
   align-items: center;
-  align-self: stretch;
 }
 
 .input-search-bar {
   border-radius: 35px;
   outline: none;
   border: none;
-  padding: 15px 20px 15px 20px;
+  padding: 15px 15px 15px 15px;
   background: azure;
   width: 100%;
   font-weight: 600;
   box-shadow: 0 2.8px 2.2px rgba(0, 0, 0, 0.02),
     0 6.7px 5.3px rgba(0, 0, 0, 0.028), 0 12.5px 10px rgba(0, 0, 0, 0.035),
     0 22.3px 17.9px rgba(0, 0, 0, 0.042);
+  position: relative;
+  margin-left: 25px;
 }
 
 .input-search-bar:focus {
@@ -207,14 +209,14 @@ body {
   outline: none;
   background-image: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
   border-radius: 50%;
-  width: 2.7rem;
-  height: 2.7rem;
+  width: 2.5rem;
+  height: 2.5rem;
   cursor: pointer;
   box-shadow: 0 2.8px 2.2px rgba(0, 0, 0, 0.02),
-    0 6.7px 5.3px rgba(0, 0, 0, 0.028), 0 12.5px 10px rgba(0, 0, 0, 0.035),
-    0 22.3px 17.9px rgba(0, 0, 0, 0.042);
+    0 6.7px 5.3px rgba(0, 0, 0, 0.028), 0 12.5px 10px rgba(0, 0, 0, 0.03),
+    0 22.3px 17.9px rgba(0, 0, 0, 0.035);
   position: relative;
-  left: -50px;
+  left: -47px;
   transition: transform 0.3s ease;
 }
 
@@ -223,7 +225,7 @@ body {
 }
 
 .search-btn:active {
-  transform: scale(0.8);
+  transform: scale(0.7);
   background-image: linear-gradient(45deg, #e73c7e, #ee7752, #23a6d5, #23d5ab);
 }
 
@@ -233,7 +235,7 @@ body {
 }
 
 .search-btn-icon:hover {
-  transform: scale(1.2);
+  transform: scale(1.1);
 }
 
 #mapid {
@@ -316,6 +318,7 @@ h1 {
   display: grid;
   grid-template-columns: 100px 70px 30px 50px 10px 30px;
   align-items: center;
+  justify-content: center;
   column-gap: 5px;
 }
 
@@ -339,6 +342,7 @@ h1 {
     column-gap: 20px;
     justify-items: center;
     margin-bottom: 40px;
+    width: 85%;
   }
 
   .card {
@@ -424,14 +428,12 @@ h1 {
   }
 
   .card__search {
-    grid-column: 1;
-    grid-row: 2;
+    align-items: flex-start;
   }
 
-  input.search-bar {
-    height: 2rem;
-    margin-top: 20px;
-    width: 20rem;
+  .input-search-bar {
+    padding: 15px 90px 15px 90px;
+    margin-left: 55px;
   }
 
   h4 {
