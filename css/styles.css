@@ -71,6 +71,7 @@ body {
   justify-content: center;
   align-items: center;
   margin-top: 50px;
+  width: 95%;
 }
 
 /* Card */
@@ -313,9 +314,9 @@ h1 {
 
 .weekday-section {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr 0.5fr 0.5fr;
+  grid-template-columns: 100px 70px 30px 50px 10px 30px;
   align-items: center;
-  column-gap: 40px;
+  column-gap: 5px;
 }
 
 @media screen and (min-width: 1087px) {
