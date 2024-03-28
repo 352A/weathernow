@@ -1,4 +1,4 @@
-window.addEventListener("load", () => {
+function getWeather() {
   let long;
   let lat;
   let temperatureDescription = document.querySelector(".description");
@@ -58,15 +58,29 @@ window.addEventListener("load", () => {
 
   const myKey = "9fd7e84f84626f28199be3bc384da8f9";
 
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition((position) => {
-      long = position.coords.longitude;
-      lat = position.coords.latitude;
-      api = `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${long}&exclude=hourly,minutely&units=metric&appid=${myKey}`;
-      apix = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${long}&exclude=hourly,minutely&units=metric&appid=${myKey}`;
+  const loadingIndicator = document.createElement("div");
+  loadingIndicator.classList.add("loader");
+  const buttonElem = document.querySelector(".btn-start");
+  buttonElem.appendChild(loadingIndicator);
 
-      weatherUpdate();
-    });
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        long = position.coords.longitude;
+        lat = position.coords.latitude;
+        api = `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${long}&exclude=hourly,minutely&units=metric&appid=${myKey}`;
+        apix = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${long}&exclude=hourly,minutely&units=metric&appid=${myKey}`;
+
+        weatherUpdate();
+
+        setTimeout(() => {
+          if (loadingIndicator) loadingIndicator.remove();
+        }, 500);
+      },
+      () => {
+        alert("Please allow location access on your device.");
+      }
+    );
   }
 
   function weatherUpdate() {
@@ -291,9 +305,9 @@ window.addEventListener("load", () => {
     skycons.play();
     return skycons.set(iconID, Skycons[currentIcon]);
   }
-});
 
-function FarenheitTo(Deg) {
-  let Farenheit = (Deg * 9) / 5 + 32;
-  return Farenheit;
+  function FarenheitTo(Deg) {
+    let Farenheit = (Deg * 9) / 5 + 32;
+    return Farenheit;
+  }
 }
