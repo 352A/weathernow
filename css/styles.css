@@ -44,11 +44,12 @@ h4 {
 body {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
   background-size: 400% 400%;
   animation: gradient 15s ease infinite;
+  min-height: 100vh;
 }
 
 @keyframes gradient {
@@ -379,7 +380,7 @@ h1 {
 
 .weekday-section {
   display: grid;
-  grid-template-columns: 3fr 2fr 1fr 1fr 0.5fr 0.5fr;
+  grid-template-columns: 100px 80px 30px 50px 10px 40px;
   align-items: center;
   justify-content: center;
   column-gap: 10px;
