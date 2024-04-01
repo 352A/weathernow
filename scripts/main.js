@@ -137,7 +137,7 @@ class App {
       .addTo(this.map)
       .bindPopup(
         `You're Here! \n
-        Click anywhere on the map to update the weather.`
+        Click anywhere on the map.`
       )
       .openPopup();
 

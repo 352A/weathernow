@@ -51,6 +51,7 @@ body {
   animation: gradient 15s ease infinite;
   min-height: 100vh;
   max-width: 100vw;
+  overflow-x: hidden;
 }
 
 @keyframes gradient {
