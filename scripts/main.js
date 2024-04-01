@@ -135,7 +135,10 @@ class App {
     let marker = null;
     marker = L.marker(coords)
       .addTo(this.map)
-      .bindPopup("You're Here!")
+      .bindPopup(
+        `You're Here! \n
+        Click anywhere on the map to update the weather.`
+      )
       .openPopup();
 
     const popup = L.popup();
@@ -367,7 +370,7 @@ class App {
   _updateUI() {
     const appBody = document.querySelector(".app");
     appBody.innerHTML = `
-    <div class="card animate__animated animate__zoomInDown">
+    <div class="card card__main animate__animated animate__zoomInDown">
       <div class="heading">
         <h2 class="location-name">Loading..</h2>
         <p class="date">Please allow location access in your browser.</p>
@@ -472,7 +475,7 @@ class App {
           </div>
           <img
               style="width: 2.5rem"
-              src="http://openweathermap.org/img/wn/03d.png"
+              src="https://openweathermap.org/img/wn/03d.png"
               alt=""
           />
           <p class="banner-text clouds-today spaceleft"></p>
@@ -499,7 +502,7 @@ class App {
       </div>
       <img
           style="width: 2.5rem"
-          src="http://openweathermap.org/img/wn/03d.png"
+          src="https://openweathermap.org/img/wn/03d.png"
           alt=""
       />
       <p class="banner-text clouds-tomorrow spaceleft"></p>
@@ -526,7 +529,7 @@ class App {
                   </div>
               <img
                   style="width: 2.5rem"
-                  src="http://openweathermap.org/img/wn/03d.png"
+                  src="https://openweathermap.org/img/wn/03d.png"
                   alt=""
               />
               <p class="banner-text clouds-third spaceleft"></p>
@@ -553,7 +556,7 @@ class App {
           </div>
           <img
               style="width: 2.5rem"
-              src="http://openweathermap.org/img/wn/03d.png"
+              src="https://openweathermap.org/img/wn/03d.png"
               alt=""
           />
           <p class="banner-text clouds-fourth spaceleft"></p>
@@ -580,7 +583,7 @@ class App {
           </div>
           <img
               style="width: 2.5rem"
-              src="http://openweathermap.org/img/wn/03d.png"
+              src="https://openweathermap.org/img/wn/03d.png"
               alt=""
           />
           <p class="banner-text clouds-fifth spaceleft"></p>
@@ -607,7 +610,7 @@ class App {
           </div>
           <img
               style="width: 2.5rem"
-              src="http://openweathermap.org/img/wn/03d.png"
+              src="https://openweathermap.org/img/wn/03d.png"
               alt=""
           />
           <p class="banner-text clouds-sixth spaceleft"></p>
@@ -634,7 +637,7 @@ class App {
           </div>
           <img
               style="width: 2.5rem"
-              src="http://openweathermap.org/img/wn/03d.png"
+              src="https://openweathermap.org/img/wn/03d.png"
               alt=""
           />
           <p class="banner-text clouds-seventh spaceleft"></p>
