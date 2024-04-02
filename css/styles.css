@@ -71,6 +71,10 @@ body::-webkit-scrollbar {
   height: 0; /* Remove scrollbar height */
 }
 
+.app {
+  opacity: 0;
+}
+
 /* Container */
 
 .container {

@@ -102,8 +102,8 @@ class App {
     this.myKey = "9fd7e84f84626f28199be3bc384da8f9";
 
     // loader
-    // this.loadingIndicator = document.createElement("div");
     this.loadingIndicator = document.querySelector(".js-loader");
+    // this.loadingIndicator = document.createElement("div");
   }
 
   _getPosition() {
@@ -122,6 +122,9 @@ class App {
     this.lat = position.coords.latitude;
     this.weatherApi = `https://api.openweathermap.org/data/2.5/onecall?lat=${this.lat}&lon=${this.long}&exclude=hourly,minutely&units=metric&appid=${this.myKey}`;
     this.locationApi = `https://api.openweathermap.org/data/2.5/weather?lat=${this.lat}&lon=${this.long}&exclude=hourly,minutely&units=metric&appid=${this.myKey}`;
+
+    const showApp = document.querySelector(".app");
+    showApp.style.opacity = "1";
 
     // map
     const coords = [this.lat, this.long];
@@ -724,6 +727,9 @@ class App {
 document.querySelector(".js-button").addEventListener("click", () => {
   const app = new App();
   app.loadingIndicator.classList.add("loader");
+  // const cards = document.querySelector(".app");
+  // cards.classList.remove("hidden");
+
   // const buttonElem = document.querySelector(".btn-start");
   // buttonElem.appendChild(app.loadingIndicator);
 });
