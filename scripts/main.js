@@ -2,9 +2,12 @@ class App {
   date = new Date();
 
   constructor() {
-    this._updateUI();
-    this._getPosition();
-    this._queryDOMElements();
+    document.querySelector(".js-button").addEventListener("click", () => {
+      this._updateUI();
+      this._getPosition();
+      this._queryDOMElements();
+      app.loadingIndicator.classList.add("loader");
+    });
   }
 
   _queryDOMElements() {
@@ -724,12 +727,4 @@ class App {
   }
 }
 
-document.querySelector(".js-button").addEventListener("click", () => {
-  const app = new App();
-  app.loadingIndicator.classList.add("loader");
-  // const cards = document.querySelector(".app");
-  // cards.classList.remove("hidden");
-
-  // const buttonElem = document.querySelector(".btn-start");
-  // buttonElem.appendChild(app.loadingIndicator);
-});
+const app = new App();
