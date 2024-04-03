@@ -1,3 +1,5 @@
+"use strict";
+
 class App {
   date = new Date();
 
@@ -9,7 +11,6 @@ class App {
       app.loadingIndicator.classList.add("loader");
     });
   }
-
   _queryDOMElements() {
     // temperature card variables
     this.locationSpecific = document.querySelector(".location-name");
@@ -17,7 +18,7 @@ class App {
     this.locationTime = document.querySelector(".date");
     this.temperatureDegree = document.querySelector(".location-temp");
     this.temperatureSection = document.querySelector(".temperature-section");
-    this.temperatureSpan = document.querySelector(".temperature-unit");
+    this.tempUnit = document.querySelector(".temperature-unit");
     this.temperatureDescription = document.querySelector(".description");
     this.maxDeg = document.querySelector(".max-deg");
     this.minDeg = document.querySelector(".min-deg");
@@ -35,47 +36,11 @@ class App {
     this.visibilityLevel = document.querySelector(".summary-visibility");
     this.maxTemp = document.querySelector(".summary-temperature__max");
 
-    // Today summary
-    this.todayMin = document.querySelector(".today-min");
-    this.todayMax = document.querySelector(".today-max");
-    this.cloudsToday = document.querySelector(".clouds-today");
-    this.humidityToday = document.querySelector(".humidity-today");
-
-    // Tomorrow summary
-    this.tomorrowMin = document.querySelector(".tomorrow-min");
-    this.tomorrowMax = document.querySelector(".tomorrow-max");
-    this.cloudsTomorrow = document.querySelector(".clouds-tomorrow");
-    this.humidityTomorrow = document.querySelector(".humidity-tomorrow");
-
-    // Third day summary
-    this.thirdMin = document.querySelector(".third-min");
-    this.thirdMax = document.querySelector(".third-max");
-    this.cloudsThird = document.querySelector(".clouds-third");
-    this.humidityThird = document.querySelector(".humidity-third");
-
-    // Forth day summary
-    this.fourthMin = document.querySelector(".fourth-min");
-    this.fourthMax = document.querySelector(".fourth-max");
-    this.cloudsFourth = document.querySelector(".clouds-fourth");
-    this.humidityFourth = document.querySelector(".humidity-fourth");
-
-    // Fifth day summary
-    this.fifthMin = document.querySelector(".fifth-min");
-    this.fifthMax = document.querySelector(".fifth-max");
-    this.cloudsFifth = document.querySelector(".clouds-fifth");
-    this.humidityFifth = document.querySelector(".humidity-fifth");
-
-    // Sixth day summary
-    this.sixthMin = document.querySelector(".sixth-min");
-    this.sixthMax = document.querySelector(".sixth-max");
-    this.cloudsSixth = document.querySelector(".clouds-sixth");
-    this.humiditySixth = document.querySelector(".humidity-sixth");
-
-    // Seventh day summary
-    this.seventhMin = document.querySelector(".seventh-min");
-    this.seventhMax = document.querySelector(".seventh-max");
-    this.cloudsSeventh = document.querySelector(".clouds-seventh");
-    this.humiditySeventh = document.querySelector(".humidity-seventh");
+    // Week Variables
+    this.dayMin = document.querySelectorAll(".day-min");
+    this.dayMax = document.querySelectorAll(".day-max");
+    this.dayClouds = document.querySelectorAll(".day-clouds");
+    this.dayHumidity = document.querySelectorAll(".day-humidity");
 
     // Weekdays
     this.today = document.querySelector(".today");
@@ -86,6 +51,10 @@ class App {
     this.sixthDay = document.querySelector(".sixth-day");
     this.seventhDay = document.querySelector(".seventh-day");
 
+    // Convert to Fahrenheit
+    document.querySelector(".temperature").addEventListener("click", () => {
+      this._toFahrenheit();
+    });
     // Search
     document.querySelector(".search-btn").addEventListener("click", () => {
       this._fetchWeather(document.querySelector(".input-search-bar").value);
@@ -152,8 +121,8 @@ class App {
 
     const onMapClick = (e) => {
       const { lat, lng } = e.latlng;
-      this.weatherApi = `https://api.openweathermap.org/data/2.5/onecall?lat=${this.lat}&lon=${this.long}&exclude=hourly,minutely&units=metric&appid=${this.myKey}`;
-      this.locationApi = `https://api.openweathermap.org/data/2.5/weather?lat=${this.lat}&lon=${this.long}&exclude=hourly,minutely&units=metric&appid=${this.myKey}`;
+      this.weatherApi = `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lng}&exclude=hourly,minutely&units=metric&appid=${this.myKey}`;
+      this.locationApi = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&exclude=hourly,minutely&units=metric&appid=${this.myKey}`;
       if (marker !== null) {
         this.map.removeLayer(marker);
       }
@@ -167,10 +136,19 @@ class App {
         .setLatLng(e.latlng)
         .setContent("Weather at " + e.latlng.toString())
         .openOn(this.map);
-      this.lat = e.latlng.lat;
-      this.long = e.latlng.lng;
-      this._weatherUpdate(this.weatherApi);
+      this.lat = lat;
+      this.long = lng;
+
+      this._weatherUpdate(this.weatherApi)
+        .then(() => {
+          // Perform further actions that depend on weather data
+        })
+        .catch((error) => {
+          console.error("Error fetching weather data:", error);
+          // Handle errors
+        });
     };
+
     this.map.on("click", onMapClick);
 
     // Weather update
@@ -247,83 +225,70 @@ class App {
 
         const capitalizedDescription =
           description.charAt(0).toUpperCase() + description.slice(1);
-        const roundedTemp = Math.floor(temp);
-        const roundedFeelsLike = Math.floor(feels_like);
-        const roundedMax = Math.floor(max);
-        const roundedMin = Math.floor(min);
+
+        this.temps = {
+          temperature: Math.floor(temp),
+          feels_like: Math.floor(feels_like),
+          max: Math.floor(max),
+          min: Math.floor(min),
+          windSpeed: wind_speed,
+        };
+
+        this.tempsFahrenheit = {
+          temperature: Math.floor((this.temps.temperature * 9) / 5 + 32),
+          feels_like: Math.floor((this.temps.feels_like * 9) / 5 + 32),
+          max: Math.floor((this.temps.max * 9) / 5 + 32),
+          min: Math.floor((this.temps.min * 9) / 5 + 32),
+        };
 
         // Update DOM elements
-        this.temperatureDegree.textContent = roundedTemp;
+        this.tempUnit.textContent = "°C";
+        this.temperatureDegree.textContent = this.temps.temperature;
+        this.feelsLike.textContent =
+          "Feels like: " + this.temps.feels_like + "°";
+        this.maxDeg.textContent = this.temps.max + "°";
+        this.maxTemp.textContent = this.temps.max + " °C";
+        this.minDeg.textContent = this.temps.min + "°/";
         this.temperatureDescription.textContent = capitalizedDescription;
         this.locationTimezone.textContent = timezone;
         this.cloudsVisible.textContent = clouds + "%";
         this.humidityLevel.textContent = humidity + "%";
         this.pressureLevel.textContent = pressure;
-        this.windSpeed.textContent = wind_speed + " Km/h";
+        this.windSpeed.textContent = this.temps.windSpeed + " Km/h";
         this.windDegree.textContent = wind_deg + "°";
         this.uvIndex.textContent = uvi;
-        this.feelsLike.textContent = "Feels like: " + roundedFeelsLike + "°";
-        this.maxDeg.textContent = roundedMax + "°";
-        this.maxTemp.textContent = roundedMax + "°";
-        this.minDeg.textContent = roundedMin + "°/";
         this.locationTime.textContent = this._timeConverter(dt);
         this.visibilityLevel.textContent = visibility;
 
-        this.dayElements = [
-          {
-            minTemp: this.todayMin,
-            maxTemp: this.todayMax,
-            clouds: this.cloudsToday,
-            humidity: this.humidityToday,
-          },
-          {
-            minTemp: this.tomorrowMin,
-            maxTemp: this.tomorrowMax,
-            clouds: this.cloudsTomorrow,
-            humidity: this.humidityTomorrow,
-          },
-          {
-            minTemp: this.thirdMin,
-            maxTemp: this.thirdMax,
-            clouds: this.cloudsThird,
-            humidity: this.humidityThird,
-          },
-          {
-            minTemp: this.fourthMin,
-            maxTemp: this.fourthMax,
-            clouds: this.cloudsFourth,
-            humidity: this.humidityFourth,
-          },
-          {
-            minTemp: this.fifthMin,
-            maxTemp: this.fifthMax,
-            clouds: this.cloudsFifth,
-            humidity: this.humidityFifth,
-          },
-          {
-            minTemp: this.sixthMin,
-            maxTemp: this.sixthMax,
-            clouds: this.cloudsSixth,
-            humidity: this.humiditySixth,
-          },
-          {
-            minTemp: this.seventhMin,
-            maxTemp: this.seventhMax,
-            clouds: this.cloudsSeventh,
-            humidity: this.humiditySeventh,
-          },
-        ];
+        // Week Summary
+        this.days = data.daily.slice(0, 7);
+        this.weekMin = [];
+        this.weekMinF = [];
+        this.weekMax = [];
+        this.weekMaxF = [];
+        this.weekClouds = [];
+        this.weekHumidity = [];
 
-        const days = data.daily.slice(0, 7);
-        days.forEach((day, index) => {
-          const { minTemp, maxTemp, clouds, humidity } =
-            this.dayElements[index];
-          if (minTemp && maxTemp && clouds && humidity) {
-            minTemp.textContent = Math.floor(day.temp.min) + "°/";
-            maxTemp.textContent = Math.floor(day.temp.max) + "°";
-            clouds.textContent = day.clouds + "%";
-            humidity.textContent = day.humidity + "%";
-          }
+        this.days.forEach((day) => {
+          this.weekMin.push(day.temp.min);
+          this.weekMinF.push(Math.floor((day.temp.min * 9) / 5 + 32));
+          this.weekMax.push(day.temp.max);
+          this.weekMaxF.push(Math.floor((day.temp.max * 9) / 5 + 32));
+          this.weekClouds.push(day.clouds);
+          this.weekHumidity.push(day.humidity);
+        });
+
+        this.dayMin.forEach((day, index) => {
+          day.textContent = Math.floor(this.weekMin[index]) + "°/";
+        });
+        this.dayMax.forEach((day, index) => {
+          day.textContent = Math.floor(this.weekMax[index]) + "°";
+        });
+        this.dayClouds.forEach((day, index) => {
+          day.textContent = this.weekClouds[index] + "%";
+        });
+        this.dayHumidity.forEach((day, index) => {
+          day.textContent = this.weekHumidity[index] + "%";
         });
 
         //Set icon
@@ -370,308 +335,343 @@ class App {
     }
   }
 
-  _toFahrenheit(deg) {
-    return (deg * 9) / 5 + 32;
-  }
-
   _updateUI() {
     const appBody = document.querySelector(".app");
-    appBody.innerHTML = `
-    <div class="card card__main animate__animated animate__zoomInDown">
-      <div class="heading">
-        <h2 class="location-name">Loading..</h2>
-        <p class="date">Please allow location access in your browser.</p>
+    appBody.innerHTML = `   <div class="card card__main animate__animated animate__zoomInDown">
+    <div class="heading">
+      <h2 class="location-name">Loading..</h2>
+      <p class="date">Please allow location access in your browser.</p>
+    </div>
+    <div class="temperature-section">
+      <div class="temperature">
+        <canvas class="icon" width="128" height="128"></canvas>
+        <span class="location-temp"></span
+        ><span class="temperature-unit">°C</span>
       </div>
-      <div class="temperature-section">
-        <div class="temperature">
-          <canvas class="icon" width="128" height="128"></canvas>
-          <span class="location-temp"></span
-          ><span class="temperature-unit">°C</span>
-        </div>
-        <div class="location-info">
-          <p class="description"></p>
-          <span class="min-deg"></span><span class="max-deg"></span>
-          <p class="feels-like"></p>
-        </div>
+      <div class="location-info">
+        <p class="description"></p>
+        <span class="min-deg"></span><span class="max-deg"></span>
+        <p class="feels-like"></p>
       </div>
     </div>
-  
-    <div class="card card__clouds" data-aos="flip-left">
-      <h3>Clouds</h3>
-      <h3 class="clouds">N/A</h3>
-      <canvas class="icon__cloud"></canvas>
-    </div>
-  
-    <div class="card card__humidity" data-aos="flip-right">
-      <h3>Humidity</h3>
-      <h3 class="humidity">N/A</h3>
-      <canvas class="icon__humidity"></canvas>
-    </div>
-  
-    <div class="card card__search animate__animated animate__flipInX">
-      <h2>Search for a city..</h2>
-      <div class="search-container">
-        <input
-          class="input-search-bar"
-          placeholder="Enter a city name.."
-          type="text"
-          id="nameInput"
-          onkeypress="return ((event.charCode >= 65 && event.charCode <= 90) || (event.charCode >= 97 && event.charCode <= 122) || (event.charCode == 32))"
-        />
-        <button class="search-btn">
-          <svg
-            class="search-btn-icon"
-            stroke="currentColor"
-            fill="currentColor"
-            stroke-width="0"
-            version="1.1"
-            viewBox="0 0 16 16"
-            height="1.6em"
-            width="1.6em"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M8 0c-2.761 0-5 2.239-5 5 0 5 5 11 5 11s5-6 5-11c0-2.761-2.239-5-5-5zM8 8.063c-1.691 0-3.063-1.371-3.063-3.063s1.371-3.063 3.063-3.063 3.063 1.371 3.063 3.063-1.371 3.063-3.063 3.063zM6.063 5c0-1.070 0.867-1.938 1.938-1.938s1.938 0.867 1.938 1.938c0 1.070-0.867 1.938-1.938 1.938s-1.938-0.867-1.938-1.938z"
-            ></path>
-          </svg>
-        </button>
-      </div>
-    </div>
-  
-    <div class="card card__pressure" data-aos="flip-up">
-      <h3>Pressure</h3>
-      <h3 class="pressure">N/A</h3>
-      <canvas class="icon__pressure"></canvas>
-    </div>
-  
-    <div class="card card__summary" data-aos="flip-down">
-      <div class="liner">
-        <h3>UV Index</h3>
-        <span class="summary-uv">N/A</span>
-      </div>
-  
-      <div class="liner">
-        <h3>Max. Temperature</h3>
-        <span class="summary-temperature__max">N/A</span>
-      </div>
-  
-      <div class="liner">
-        <h3>Wind Speed</h3>
-        <span class="summary-wind__speed">N/A</span>
-      </div>
-  
-      <div class="liner">
-        <h3>Wind Degree</h3>
-        <span class="summary-wind__degree">N/A</span>
-      </div>
-  
-      <div class="liner">
-        <h3>Visibility</h3>
-        <span class="summary-visibility">N/A</span>
-      </div>
-    </div>
-  
-  <div class="weekdays" data-aos="flip-left"
-  data-aos-anchor-placement="top-bottom">
-      <div class="weekdays-container">
-          <!-- today -->
-          <div class="weekday-section card card__weekday">
-              <h4 class="today day-title spaceleft"></h4>
-              <div class="degrees">
-              <span class="banner-text today-min"></span><span class="banner-text today-max"></span>
-          </div>
-          <img
-              style="width: 2.5rem"
-              src="https://openweathermap.org/img/wn/03d.png"
-              alt=""
-          />
-          <p class="banner-text clouds-today spaceleft"></p>
-          <svg
-              stroke="currentColor"
-              fill="currentColor"
-              stroke-width="0"
-              version="1.1"
-              viewBox="0 0 16 16"
-              height="1em"
-              width="1em"
-              xmlns="http://www.w3.org/2000/svg"
-          >
-              <path
-              d="M13.51 7.393c-1.027-2.866-3.205-5.44-5.51-7.393-2.305 1.953-4.482 4.527-5.51 7.393-0.635 1.772-0.698 3.696 0.197 5.397 1.029 1.955 3.104 3.21 5.313 3.21s4.284-1.255 5.313-3.21c0.895-1.701 0.832-3.624 0.197-5.397zM11.543 11.859c-0.684 1.301-2.075 2.141-3.543 2.141-0.861 0-1.696-0.29-2.377-0.791 0.207 0.027 0.416 0.041 0.627 0.041 1.835 0 3.573-1.050 4.428-2.676 0.701-1.333 0.64-2.716 0.373-3.818 0.227 0.44 0.42 0.878 0.576 1.311 0.353 0.985 0.625 2.443-0.084 3.791z"></path>
-          </svg>
-          <p class="banner-text humidity-today spaceleft"></p>
-          </div>
-          <!-- tomorrow -->
-          <div class="weekday-section card card__weekday">
-          <h4 class="tomorrow day-title spaceleft"></h4>
-          <div class="degrees">
-          <span class="banner-text tomorrow-min"></span><span class="banner-text tomorrow-max"></span>
-      </div>
-      <img
-          style="width: 2.5rem"
-          src="https://openweathermap.org/img/wn/03d.png"
-          alt=""
+  </div>
+
+  <div class="card card__clouds" data-aos="flip-left">
+    <h3>Clouds</h3>
+    <h3 class="clouds">N/A</h3>
+    <canvas class="icon__cloud"></canvas>
+  </div>
+
+  <div class="card card__humidity" data-aos="flip-right">
+    <h3>Humidity</h3>
+    <h3 class="humidity">N/A</h3>
+    <canvas class="icon__humidity"></canvas>
+  </div>
+
+  <div class="card card__search animate__animated animate__flipInX">
+    <h2>Search for a city..</h2>
+    <div class="search-container">
+      <input
+        class="input-search-bar"
+        placeholder="Enter a city name.."
+        type="text"
+        id="nameInput"
+        onkeypress="return ((event.charCode >= 65 && event.charCode <= 90) || (event.charCode >= 97 && event.charCode <= 122) || (event.charCode == 32))"
       />
-      <p class="banner-text clouds-tomorrow spaceleft"></p>
-      <svg
+      <button class="search-btn">
+        <svg
+          class="search-btn-icon"
           stroke="currentColor"
           fill="currentColor"
           stroke-width="0"
           version="1.1"
           viewBox="0 0 16 16"
-          height="1em"
-          width="1em"
+          height="1.6em"
+          width="1.6em"
           xmlns="http://www.w3.org/2000/svg"
-      >
+        >
           <path
-          d="M13.51 7.393c-1.027-2.866-3.205-5.44-5.51-7.393-2.305 1.953-4.482 4.527-5.51 7.393-0.635 1.772-0.698 3.696 0.197 5.397 1.029 1.955 3.104 3.21 5.313 3.21s4.284-1.255 5.313-3.21c0.895-1.701 0.832-3.624 0.197-5.397zM11.543 11.859c-0.684 1.301-2.075 2.141-3.543 2.141-0.861 0-1.696-0.29-2.377-0.791 0.207 0.027 0.416 0.041 0.627 0.041 1.835 0 3.573-1.050 4.428-2.676 0.701-1.333 0.64-2.716 0.373-3.818 0.227 0.44 0.42 0.878 0.576 1.311 0.353 0.985 0.625 2.443-0.084 3.791z"></path>
-      </svg>
-      <p class="banner-text humidity-tomorrow spaceleft"></p>
-          </div>
-          <!-- third day -->
-          <div class="weekday-section card card__weekday">
-                  <h4 class="third-day day-title spaceleft"></h4>
-                  <div class="degrees">
-                  <span class="banner-text third-min"></span><span class="banner-text third-max"></span>
-                  </div>
-              <img
-                  style="width: 2.5rem"
-                  src="https://openweathermap.org/img/wn/03d.png"
-                  alt=""
-              />
-              <p class="banner-text clouds-third spaceleft"></p>
-              <svg
-                  stroke="currentColor"
-                  fill="currentColor"
-                  stroke-width="0"
-                  version="1.1"
-                  viewBox="0 0 16 16"
-                  height="1em"
-                  width="1em"
-                  xmlns="http://www.w3.org/2000/svg"
-              >
-                  <path
-                  d="M13.51 7.393c-1.027-2.866-3.205-5.44-5.51-7.393-2.305 1.953-4.482 4.527-5.51 7.393-0.635 1.772-0.698 3.696 0.197 5.397 1.029 1.955 3.104 3.21 5.313 3.21s4.284-1.255 5.313-3.21c0.895-1.701 0.832-3.624 0.197-5.397zM11.543 11.859c-0.684 1.301-2.075 2.141-3.543 2.141-0.861 0-1.696-0.29-2.377-0.791 0.207 0.027 0.416 0.041 0.627 0.041 1.835 0 3.573-1.050 4.428-2.676 0.701-1.333 0.64-2.716 0.373-3.818 0.227 0.44 0.42 0.878 0.576 1.311 0.353 0.985 0.625 2.443-0.084 3.791z"></path>
-              </svg>
-              <p class="banner-text humidity-third spaceleft"></p>
-          </div>
-          <!-- fourth day -->
-          <div class="weekday-section card card__weekday">
-              <h4 class="fourth-day day-title spaceleft"></h4>
-              <div class="degrees">
-              <span class="banner-text fourth-min"></span><span class="banner-text fourth-max"></span>
-          </div>
-          <img
-              style="width: 2.5rem"
-              src="https://openweathermap.org/img/wn/03d.png"
-              alt=""
-          />
-          <p class="banner-text clouds-fourth spaceleft"></p>
-          <svg
-              stroke="currentColor"
-              fill="currentColor"
-              stroke-width="0"
-              version="1.1"
-              viewBox="0 0 16 16"
-              height="1em"
-              width="1em"
-              xmlns="http://www.w3.org/2000/svg"
-          >
-              <path
-              d="M13.51 7.393c-1.027-2.866-3.205-5.44-5.51-7.393-2.305 1.953-4.482 4.527-5.51 7.393-0.635 1.772-0.698 3.696 0.197 5.397 1.029 1.955 3.104 3.21 5.313 3.21s4.284-1.255 5.313-3.21c0.895-1.701 0.832-3.624 0.197-5.397zM11.543 11.859c-0.684 1.301-2.075 2.141-3.543 2.141-0.861 0-1.696-0.29-2.377-0.791 0.207 0.027 0.416 0.041 0.627 0.041 1.835 0 3.573-1.050 4.428-2.676 0.701-1.333 0.64-2.716 0.373-3.818 0.227 0.44 0.42 0.878 0.576 1.311 0.353 0.985 0.625 2.443-0.084 3.791z"></path>
-          </svg>
-          <p class="banner-text humidity-fourth spaceleft"></p>
-          </div>
-          <!-- fifth day -->
-          <div class="weekday-section card card__weekday">
-              <h4 class="fifth-day day-title spaceleft"></h4>
-              <div class="degrees">
-              <span class="banner-text fifth-min"></span><span class="banner-text fifth-max"></span>
-          </div>
-          <img
-              style="width: 2.5rem"
-              src="https://openweathermap.org/img/wn/03d.png"
-              alt=""
-          />
-          <p class="banner-text clouds-fifth spaceleft"></p>
-          <svg
-              stroke="currentColor"
-              fill="currentColor"
-              stroke-width="0"
-              version="1.1"
-              viewBox="0 0 16 16"
-              height="1em"
-              width="1em"
-              xmlns="http://www.w3.org/2000/svg"
-          >
-              <path
-              d="M13.51 7.393c-1.027-2.866-3.205-5.44-5.51-7.393-2.305 1.953-4.482 4.527-5.51 7.393-0.635 1.772-0.698 3.696 0.197 5.397 1.029 1.955 3.104 3.21 5.313 3.21s4.284-1.255 5.313-3.21c0.895-1.701 0.832-3.624 0.197-5.397zM11.543 11.859c-0.684 1.301-2.075 2.141-3.543 2.141-0.861 0-1.696-0.29-2.377-0.791 0.207 0.027 0.416 0.041 0.627 0.041 1.835 0 3.573-1.050 4.428-2.676 0.701-1.333 0.64-2.716 0.373-3.818 0.227 0.44 0.42 0.878 0.576 1.311 0.353 0.985 0.625 2.443-0.084 3.791z"></path>
-          </svg>
-          <p class="banner-text humidity-fifth spaceleft"></p>
-          </div>
-          <!-- sixth day -->
-          <div class="weekday-section card card__weekday">
-              <h4 class="sixth-day day-title spaceleft"></h4>
-              <div class="degrees">
-              <span class="banner-text sixth-min"></span><span class="banner-text sixth-max"></span>
-          </div>
-          <img
-              style="width: 2.5rem"
-              src="https://openweathermap.org/img/wn/03d.png"
-              alt=""
-          />
-          <p class="banner-text clouds-sixth spaceleft"></p>
-          <svg
-              stroke="currentColor"
-              fill="currentColor"
-              stroke-width="0"
-              version="1.1"
-              viewBox="0 0 16 16"
-              height="1em"
-              width="1em"
-              xmlns="http://www.w3.org/2000/svg"
-          >
-              <path
-              d="M13.51 7.393c-1.027-2.866-3.205-5.44-5.51-7.393-2.305 1.953-4.482 4.527-5.51 7.393-0.635 1.772-0.698 3.696 0.197 5.397 1.029 1.955 3.104 3.21 5.313 3.21s4.284-1.255 5.313-3.21c0.895-1.701 0.832-3.624 0.197-5.397zM11.543 11.859c-0.684 1.301-2.075 2.141-3.543 2.141-0.861 0-1.696-0.29-2.377-0.791 0.207 0.027 0.416 0.041 0.627 0.041 1.835 0 3.573-1.050 4.428-2.676 0.701-1.333 0.64-2.716 0.373-3.818 0.227 0.44 0.42 0.878 0.576 1.311 0.353 0.985 0.625 2.443-0.084 3.791z"></path>
-          </svg>
-          <p class="banner-text humidity-sixth spaceleft"></p>
-          </div>
-          <!-- seventh day -->
-          <div class="weekday-section card card__weekday">
-              <h4 class="seventh-day day-title spaceleft"></h4>
-              <div class="degrees">
-              <span class="banner-text seventh-min"></span><span class="banner-text seventh-max"></span>
-          </div>
-          <img
-              style="width: 2.5rem"
-              src="https://openweathermap.org/img/wn/03d.png"
-              alt=""
-          />
-          <p class="banner-text clouds-seventh spaceleft"></p>
-          <svg
-              stroke="currentColor"
-              fill="currentColor"
-              stroke-width="0"
-              version="1.1"
-              viewBox="0 0 16 16"
-              height="1em"
-              width="1em"
-              xmlns="http://www.w3.org/2000/svg"
-          >
-              <path
-              d="M13.51 7.393c-1.027-2.866-3.205-5.44-5.51-7.393-2.305 1.953-4.482 4.527-5.51 7.393-0.635 1.772-0.698 3.696 0.197 5.397 1.029 1.955 3.104 3.21 5.313 3.21s4.284-1.255 5.313-3.21c0.895-1.701 0.832-3.624 0.197-5.397zM11.543 11.859c-0.684 1.301-2.075 2.141-3.543 2.141-0.861 0-1.696-0.29-2.377-0.791 0.207 0.027 0.416 0.041 0.627 0.041 1.835 0 3.573-1.050 4.428-2.676 0.701-1.333 0.64-2.716 0.373-3.818 0.227 0.44 0.42 0.878 0.576 1.311 0.353 0.985 0.625 2.443-0.084 3.791z"></path>
-          </svg>
-          <p class="banner-text humidity-seventh spaceleft"></p>
-          </div>
-      </div>
+            d="M8 0c-2.761 0-5 2.239-5 5 0 5 5 11 5 11s5-6 5-11c0-2.761-2.239-5-5-5zM8 8.063c-1.691 0-3.063-1.371-3.063-3.063s1.371-3.063 3.063-3.063 3.063 1.371 3.063 3.063-1.371 3.063-3.063 3.063zM6.063 5c0-1.070 0.867-1.938 1.938-1.938s1.938 0.867 1.938 1.938c0 1.070-0.867 1.938-1.938 1.938s-1.938-0.867-1.938-1.938z"
+          ></path>
+        </svg>
+      </button>
+    </div>
   </div>
-        
-  
-       
-  
-        <div id="mapid" class="card card__map" data-aos="flip-up"></div>
-      </div>
-    </div>`;
+
+  <div class="card card__pressure" data-aos="flip-up">
+    <h3>Pressure</h3>
+    <h3 class="pressure">N/A</h3>
+    <canvas class="icon__pressure"></canvas>
+  </div>
+
+  <div class="card card__summary" data-aos="flip-down">
+    <div class="liner">
+      <h3>UV Index</h3>
+      <span class="summary-uv">N/A</span>
+    </div>
+
+    <div class="liner">
+      <h3>Max. Temperature</h3>
+      <span class="summary-temperature__max">N/A</span>
+    </div>
+
+    <div class="liner">
+      <h3>Wind Speed</h3>
+      <span class="summary-wind__speed">N/A</span>
+    </div>
+
+    <div class="liner">
+      <h3>Wind Degree</h3>
+      <span class="summary-wind__degree">N/A</span>
+    </div>
+
+    <div class="liner">
+      <h3>Visibility</h3>
+      <span class="summary-visibility">N/A</span>
+    </div>
+  </div>
+
+<div class="weekdays" data-aos="flip-left"
+data-aos-anchor-placement="top-bottom">
+    <div class="weekdays-container">
+        <!-- today -->
+        <div class="weekday-section card card__weekday">
+            <h4 class="today day-title spaceleft"></h4>
+            <div class="degrees">
+            <span class="banner-text day-min"></span><span class="banner-text day-max"></span>
+        </div>
+        <img
+            style="width: 2.5rem"
+            src="https://openweathermap.org/img/wn/03d.png"
+            alt=""
+        />
+        <p class="banner-text day-clouds spaceleft"></p>
+        <svg
+            stroke="currentColor"
+            fill="currentColor"
+            stroke-width="0"
+            version="1.1"
+            viewBox="0 0 16 16"
+            height="1em"
+            width="1em"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+            d="M13.51 7.393c-1.027-2.866-3.205-5.44-5.51-7.393-2.305 1.953-4.482 4.527-5.51 7.393-0.635 1.772-0.698 3.696 0.197 5.397 1.029 1.955 3.104 3.21 5.313 3.21s4.284-1.255 5.313-3.21c0.895-1.701 0.832-3.624 0.197-5.397zM11.543 11.859c-0.684 1.301-2.075 2.141-3.543 2.141-0.861 0-1.696-0.29-2.377-0.791 0.207 0.027 0.416 0.041 0.627 0.041 1.835 0 3.573-1.050 4.428-2.676 0.701-1.333 0.64-2.716 0.373-3.818 0.227 0.44 0.42 0.878 0.576 1.311 0.353 0.985 0.625 2.443-0.084 3.791z"></path>
+        </svg>
+        <p class="banner-text day-humidity spaceleft"></p>
+        </div>
+        <!-- tomorrow -->
+        <div class="weekday-section card card__weekday">
+        <h4 class="tomorrow day-title spaceleft"></h4>
+        <div class="degrees">
+        <span class="banner-text day-min"></span><span class="banner-text day-max"></span>
+    </div>
+    <img
+        style="width: 2.5rem"
+        src="https://openweathermap.org/img/wn/03d.png"
+        alt=""
+    />
+    <p class="banner-text day-clouds spaceleft"></p>
+    <svg
+        stroke="currentColor"
+        fill="currentColor"
+        stroke-width="0"
+        version="1.1"
+        viewBox="0 0 16 16"
+        height="1em"
+        width="1em"
+        xmlns="http://www.w3.org/2000/svg"
+    >
+        <path
+        d="M13.51 7.393c-1.027-2.866-3.205-5.44-5.51-7.393-2.305 1.953-4.482 4.527-5.51 7.393-0.635 1.772-0.698 3.696 0.197 5.397 1.029 1.955 3.104 3.21 5.313 3.21s4.284-1.255 5.313-3.21c0.895-1.701 0.832-3.624 0.197-5.397zM11.543 11.859c-0.684 1.301-2.075 2.141-3.543 2.141-0.861 0-1.696-0.29-2.377-0.791 0.207 0.027 0.416 0.041 0.627 0.041 1.835 0 3.573-1.050 4.428-2.676 0.701-1.333 0.64-2.716 0.373-3.818 0.227 0.44 0.42 0.878 0.576 1.311 0.353 0.985 0.625 2.443-0.084 3.791z"></path>
+    </svg>
+    <p class="banner-text day-humidity spaceleft"></p>
+        </div>
+        <!-- third day -->
+        <div class="weekday-section card card__weekday">
+                <h4 class="third-day day-title spaceleft"></h4>
+                <div class="degrees">
+                <span class="banner-text day-min"></span><span class="banner-text day-max"></span>
+                </div>
+            <img
+                style="width: 2.5rem"
+                src="https://openweathermap.org/img/wn/03d.png"
+                alt=""
+            />
+            <p class="banner-text day-clouds spaceleft"></p>
+            <svg
+                stroke="currentColor"
+                fill="currentColor"
+                stroke-width="0"
+                version="1.1"
+                viewBox="0 0 16 16"
+                height="1em"
+                width="1em"
+                xmlns="http://www.w3.org/2000/svg"
+            >
+                <path
+                d="M13.51 7.393c-1.027-2.866-3.205-5.44-5.51-7.393-2.305 1.953-4.482 4.527-5.51 7.393-0.635 1.772-0.698 3.696 0.197 5.397 1.029 1.955 3.104 3.21 5.313 3.21s4.284-1.255 5.313-3.21c0.895-1.701 0.832-3.624 0.197-5.397zM11.543 11.859c-0.684 1.301-2.075 2.141-3.543 2.141-0.861 0-1.696-0.29-2.377-0.791 0.207 0.027 0.416 0.041 0.627 0.041 1.835 0 3.573-1.050 4.428-2.676 0.701-1.333 0.64-2.716 0.373-3.818 0.227 0.44 0.42 0.878 0.576 1.311 0.353 0.985 0.625 2.443-0.084 3.791z"></path>
+            </svg>
+            <p class="banner-text day-humidity spaceleft"></p>
+        </div>
+        <!-- fourth day -->
+        <div class="weekday-section card card__weekday">
+            <h4 class="fourth-day day-title spaceleft"></h4>
+            <div class="degrees">
+            <span class="banner-text day-min"></span><span class="banner-text day-max"></span>
+        </div>
+        <img
+            style="width: 2.5rem"
+            src="https://openweathermap.org/img/wn/03d.png"
+            alt=""
+        />
+        <p class="banner-text day-clouds spaceleft"></p>
+        <svg
+            stroke="currentColor"
+            fill="currentColor"
+            stroke-width="0"
+            version="1.1"
+            viewBox="0 0 16 16"
+            height="1em"
+            width="1em"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+            d="M13.51 7.393c-1.027-2.866-3.205-5.44-5.51-7.393-2.305 1.953-4.482 4.527-5.51 7.393-0.635 1.772-0.698 3.696 0.197 5.397 1.029 1.955 3.104 3.21 5.313 3.21s4.284-1.255 5.313-3.21c0.895-1.701 0.832-3.624 0.197-5.397zM11.543 11.859c-0.684 1.301-2.075 2.141-3.543 2.141-0.861 0-1.696-0.29-2.377-0.791 0.207 0.027 0.416 0.041 0.627 0.041 1.835 0 3.573-1.050 4.428-2.676 0.701-1.333 0.64-2.716 0.373-3.818 0.227 0.44 0.42 0.878 0.576 1.311 0.353 0.985 0.625 2.443-0.084 3.791z"></path>
+        </svg>
+        <p class="banner-text day-humidity spaceleft"></p>
+        </div>
+        <!-- fifth day -->
+        <div class="weekday-section card card__weekday">
+            <h4 class="fifth-day day-title spaceleft"></h4>
+            <div class="degrees">
+            <span class="banner-text day-min"></span><span class="banner-text day-max"></span>
+        </div>
+        <img
+            style="width: 2.5rem"
+            src="https://openweathermap.org/img/wn/03d.png"
+            alt=""
+        />
+        <p class="banner-text day-clouds spaceleft"></p>
+        <svg
+            stroke="currentColor"
+            fill="currentColor"
+            stroke-width="0"
+            version="1.1"
+            viewBox="0 0 16 16"
+            height="1em"
+            width="1em"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+            d="M13.51 7.393c-1.027-2.866-3.205-5.44-5.51-7.393-2.305 1.953-4.482 4.527-5.51 7.393-0.635 1.772-0.698 3.696 0.197 5.397 1.029 1.955 3.104 3.21 5.313 3.21s4.284-1.255 5.313-3.21c0.895-1.701 0.832-3.624 0.197-5.397zM11.543 11.859c-0.684 1.301-2.075 2.141-3.543 2.141-0.861 0-1.696-0.29-2.377-0.791 0.207 0.027 0.416 0.041 0.627 0.041 1.835 0 3.573-1.050 4.428-2.676 0.701-1.333 0.64-2.716 0.373-3.818 0.227 0.44 0.42 0.878 0.576 1.311 0.353 0.985 0.625 2.443-0.084 3.791z"></path>
+        </svg>
+        <p class="banner-text day-humidity spaceleft"></p>
+        </div>
+        <!-- sixth day -->
+        <div class="weekday-section card card__weekday">
+            <h4 class="sixth-day day-title spaceleft"></h4>
+            <div class="degrees">
+            <span class="banner-text day-min"></span><span class="banner-text day-max"></span>
+        </div>
+        <img
+            style="width: 2.5rem"
+            src="https://openweathermap.org/img/wn/03d.png"
+            alt=""
+        />
+        <p class="banner-text day-clouds spaceleft"></p>
+        <svg
+            stroke="currentColor"
+            fill="currentColor"
+            stroke-width="0"
+            version="1.1"
+            viewBox="0 0 16 16"
+            height="1em"
+            width="1em"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+            d="M13.51 7.393c-1.027-2.866-3.205-5.44-5.51-7.393-2.305 1.953-4.482 4.527-5.51 7.393-0.635 1.772-0.698 3.696 0.197 5.397 1.029 1.955 3.104 3.21 5.313 3.21s4.284-1.255 5.313-3.21c0.895-1.701 0.832-3.624 0.197-5.397zM11.543 11.859c-0.684 1.301-2.075 2.141-3.543 2.141-0.861 0-1.696-0.29-2.377-0.791 0.207 0.027 0.416 0.041 0.627 0.041 1.835 0 3.573-1.050 4.428-2.676 0.701-1.333 0.64-2.716 0.373-3.818 0.227 0.44 0.42 0.878 0.576 1.311 0.353 0.985 0.625 2.443-0.084 3.791z"></path>
+        </svg>
+        <p class="banner-text day-humidity spaceleft"></p>
+        </div>
+        <!-- seventh day -->
+        <div class="weekday-section card card__weekday">
+            <h4 class="seventh-day day-title spaceleft"></h4>
+            <div class="degrees">
+            <span class="banner-text day-min"></span><span class="banner-text day-max"></span>
+        </div>
+        <img
+            style="width: 2.5rem"
+            src="https://openweathermap.org/img/wn/03d.png"
+            alt=""
+        />
+        <p class="banner-text day-clouds spaceleft"></p>
+        <svg
+            stroke="currentColor"
+            fill="currentColor"
+            stroke-width="0"
+            version="1.1"
+            viewBox="0 0 16 16"
+            height="1em"
+            width="1em"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+            d="M13.51 7.393c-1.027-2.866-3.205-5.44-5.51-7.393-2.305 1.953-4.482 4.527-5.51 7.393-0.635 1.772-0.698 3.696 0.197 5.397 1.029 1.955 3.104 3.21 5.313 3.21s4.284-1.255 5.313-3.21c0.895-1.701 0.832-3.624 0.197-5.397zM11.543 11.859c-0.684 1.301-2.075 2.141-3.543 2.141-0.861 0-1.696-0.29-2.377-0.791 0.207 0.027 0.416 0.041 0.627 0.041 1.835 0 3.573-1.050 4.428-2.676 0.701-1.333 0.64-2.716 0.373-3.818 0.227 0.44 0.42 0.878 0.576 1.311 0.353 0.985 0.625 2.443-0.084 3.791z"></path>
+        </svg>
+        <p class="banner-text day-humidity spaceleft"></p>
+        </div>
+    </div>
+</div>
+      
+
+     
+
+      <div id="mapid" class="card card__map" data-aos="flip-up"></div>
+    </div>
+  </div>
+   `;
+  }
+
+  _toFahrenheit() {
+    if (this.tempUnit.textContent === "°C") {
+      this.tempUnit.textContent = "°F";
+      this.temperatureDegree.textContent = this.tempsFahrenheit.temperature;
+      this.feelsLike.textContent =
+        "Feels like: " + this.tempsFahrenheit.feels_like + "°";
+      this.maxDeg.textContent = this.tempsFahrenheit.max + "°";
+      this.maxTemp.textContent = this.tempsFahrenheit.max + " °F";
+      this.minDeg.textContent = this.tempsFahrenheit.min + "°/";
+
+      this.dayMin.forEach((day, index) => {
+        day.textContent = Math.floor(this.weekMinF[index]) + "°/";
+      });
+      this.dayMax.forEach((day, index) => {
+        day.textContent = Math.floor(this.weekMaxF[index]) + "°";
+      });
+      this.windSpeed.textContent = this._toMPH(this.temps.windSpeed) + " MPH";
+    } else if (this.tempUnit.textContent === "°F") {
+      this.tempUnit.textContent = "°C";
+      this.temperatureDegree.textContent = this.temps.temperature;
+      this.feelsLike.textContent = "Feels like: " + this.temps.feels_like + "°";
+      this.maxDeg.textContent = this.temps.max + "°";
+      this.maxTemp.textContent = this.temps.max + " °C";
+      this.minDeg.textContent = this.temps.min + "°/";
+
+      this.dayMin.forEach((day, index) => {
+        day.textContent = Math.floor(this.weekMin[index]) + "°/";
+      });
+      this.dayMax.forEach((day, index) => {
+        day.textContent = Math.floor(this.weekMax[index]) + "°";
+      });
+      this.windSpeed.textContent = this.temps.windSpeed + " Km/h";
+    }
+  }
+
+  _toMPH(speedInKilometersPerHour) {
+    return Math.floor(speedInKilometersPerHour * 0.621371);
   }
 
   _timeConverter(UNIX_timestamp) {
