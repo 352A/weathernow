@@ -113,9 +113,10 @@ class App {
     // Get location
     if (navigator.geolocation)
       navigator.geolocation.getCurrentPosition(
-        this._loadMap.bind(this),
-        function () {
+        (position) => this._loadMap(position),
+        () => {
           alert("Please allow location access on your device.");
+          this._getPosition();
         }
       );
   }
