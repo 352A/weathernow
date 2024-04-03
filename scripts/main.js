@@ -1,7 +1,5 @@
 "use strict";
 
-"use strict";
-
 class App {
   date = new Date();
 
@@ -20,7 +18,6 @@ class App {
     this.locationTime = document.querySelector(".date");
     this.temperatureDegree = document.querySelector(".location-temp");
     this.temperatureSection = document.querySelector(".temperature-section");
-    this.tempUnit = document.querySelector(".temperature-unit");
     this.tempUnit = document.querySelector(".temperature-unit");
     this.temperatureDescription = document.querySelector(".description");
     this.maxDeg = document.querySelector(".max-deg");
@@ -44,11 +41,6 @@ class App {
     this.dayMax = document.querySelectorAll(".day-max");
     this.dayClouds = document.querySelectorAll(".day-clouds");
     this.dayHumidity = document.querySelectorAll(".day-humidity");
-    // Week Variables
-    this.dayMin = document.querySelectorAll(".day-min");
-    this.dayMax = document.querySelectorAll(".day-max");
-    this.dayClouds = document.querySelectorAll(".day-clouds");
-    this.dayHumidity = document.querySelectorAll(".day-humidity");
 
     // Weekdays
     this.today = document.querySelector(".today");
@@ -59,10 +51,6 @@ class App {
     this.sixthDay = document.querySelector(".sixth-day");
     this.seventhDay = document.querySelector(".seventh-day");
 
-    // Convert to Fahrenheit
-    document.querySelector(".temperature").addEventListener("click", () => {
-      this._toFahrenheit();
-    });
     // Convert to Fahrenheit
     document.querySelector(".temperature").addEventListener("click", () => {
       this._toFahrenheit();
@@ -135,8 +123,6 @@ class App {
       const { lat, lng } = e.latlng;
       this.weatherApi = `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lng}&exclude=hourly,minutely&units=metric&appid=${this.myKey}`;
       this.locationApi = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&exclude=hourly,minutely&units=metric&appid=${this.myKey}`;
-      this.weatherApi = `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lng}&exclude=hourly,minutely&units=metric&appid=${this.myKey}`;
-      this.locationApi = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&exclude=hourly,minutely&units=metric&appid=${this.myKey}`;
       if (marker !== null) {
         this.map.removeLayer(marker);
       }
@@ -150,17 +136,6 @@ class App {
         .setLatLng(e.latlng)
         .setContent("Weather at " + e.latlng.toString())
         .openOn(this.map);
-      this.lat = lat;
-      this.long = lng;
-
-      this._weatherUpdate(this.weatherApi)
-        .then(() => {
-          // Perform further actions that depend on weather data
-        })
-        .catch((error) => {
-          console.error("Error fetching weather data:", error);
-          // Handle errors
-        });
       this.lat = lat;
       this.long = lng;
 
@@ -266,29 +241,7 @@ class App {
           min: Math.floor((this.temps.min * 9) / 5 + 32),
         };
 
-        this.temps = {
-          temperature: Math.floor(temp),
-          feels_like: Math.floor(feels_like),
-          max: Math.floor(max),
-          min: Math.floor(min),
-          windSpeed: wind_speed,
-        };
-
-        this.tempsFahrenheit = {
-          temperature: Math.floor((this.temps.temperature * 9) / 5 + 32),
-          feels_like: Math.floor((this.temps.feels_like * 9) / 5 + 32),
-          max: Math.floor((this.temps.max * 9) / 5 + 32),
-          min: Math.floor((this.temps.min * 9) / 5 + 32),
-        };
-
         // Update DOM elements
-        this.tempUnit.textContent = "°C";
-        this.temperatureDegree.textContent = this.temps.temperature;
-        this.feelsLike.textContent =
-          "Feels like: " + this.temps.feels_like + "°";
-        this.maxDeg.textContent = this.temps.max + "°";
-        this.maxTemp.textContent = this.temps.max + " °C";
-        this.minDeg.textContent = this.temps.min + "°/";
         this.tempUnit.textContent = "°C";
         this.temperatureDegree.textContent = this.temps.temperature;
         this.feelsLike.textContent =
@@ -301,7 +254,6 @@ class App {
         this.cloudsVisible.textContent = clouds + "%";
         this.humidityLevel.textContent = humidity + "%";
         this.pressureLevel.textContent = pressure;
-        this.windSpeed.textContent = this.temps.windSpeed + " Km/h";
         this.windSpeed.textContent = this.temps.windSpeed + " Km/h";
         this.windDegree.textContent = wind_deg + "°";
         this.uvIndex.textContent = uvi;
