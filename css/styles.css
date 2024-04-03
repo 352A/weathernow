@@ -135,7 +135,7 @@ body::-webkit-scrollbar {
 }
 
 .location-temp {
-  font-size: 3.9rem;
+  font-size: 3.4rem;
 }
 
 .temperature {
@@ -144,7 +144,8 @@ body::-webkit-scrollbar {
   display: flex;
   flex-direction: row;
   align-items: flex-end;
-  margin: 20px 10px 50px 10px;
+  margin: 20px 0px 50px 15px;
+  padding-top: 5px;
 }
 
 .temp-cont {
@@ -495,7 +496,7 @@ h1 {
 
   .temperature {
     margin: 0;
-    padding: 15px 5px 15px 5px;
+    padding: 20px 0px 5px 0px;
     transform: translateY(-20px);
   }
 
@@ -517,7 +518,7 @@ h1 {
     font-weight: 600;
   }
   .location-temp {
-    font-size: 4.2rem;
+    font-size: 3.9rem;
   }
 
   .location-info {
