@@ -132,12 +132,23 @@ body::-webkit-scrollbar {
 .temperature-section {
   display: flex;
   justify-content: space-between;
-  margin-top: 40px;
 }
 
 .location-temp {
-  font-size: 3.5rem;
-  align-self: center;
+  font-size: 3.1rem;
+}
+
+.temperature {
+  opacity: 1;
+  transition: opacity 1s ease-out;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  padding: 25px 10px 20px 10px;
+}
+
+.temp-cont {
+  transform: translateY(15px);
 }
 
 .temperature:hover {
@@ -147,10 +158,9 @@ body::-webkit-scrollbar {
 
 .location-info {
   font-size: 0.7rem;
-  align-self: flex-start;
   text-align: right;
   width: 50%;
-  margin-top: 50px;
+  align-self: flex-end;
 }
 
 .description,
@@ -483,15 +493,37 @@ h1 {
     margin: 5px 5px 5px 0;
   }
 
+  .temperature-section {
+    transform: translateY(-15px);
+  }
+
+  .temperature {
+    transform: translateX(-10px);
+  }
+
+  .temp-cont {
+    transform: translateY(10px);
+  }
+
+  .temp-cont:hover {
+    transform: translateY(5px);
+  }
+
   .card__summary h3 {
     font-size: 1rem;
     padding-top: 2px;
     margin-top: 9px;
   }
+  .temperature-unit {
+    font-size: 1.4rem;
+    font-weight: 600;
+  }
+  .location-temp {
+    font-size: 4rem;
+  }
 
   .location-info {
     font-size: 13px;
-    margin-top: 70px;
   }
 
   .card__pressure {

@@ -52,8 +52,13 @@ class App {
     this.seventhDay = document.querySelector(".seventh-day");
 
     // Convert to Fahrenheit
-    document.querySelector(".temperature").addEventListener("click", () => {
+    this.tempElem = document.querySelector(".temperature");
+    this.tempElem.addEventListener("click", () => {
+      this.tempElem.style.opacity = "0";
       this._toFahrenheit();
+      setTimeout(() => {
+        this.tempElem.style.opacity = "1";
+      }, 700);
     });
     // Search
     document.querySelector(".search-btn").addEventListener("click", () => {
@@ -139,14 +144,7 @@ class App {
       this.lat = lat;
       this.long = lng;
 
-      this._weatherUpdate(this.weatherApi)
-        .then(() => {
-          // Perform further actions that depend on weather data
-        })
-        .catch((error) => {
-          console.error("Error fetching weather data:", error);
-          // Handle errors
-        });
+      this._weatherUpdate(this.weatherApi);
     };
 
     this.map.on("click", onMapClick);
@@ -344,9 +342,11 @@ class App {
     </div>
     <div class="temperature-section">
       <div class="temperature">
-        <canvas class="icon" width="128" height="128"></canvas>
+        <canvas class="icon" width="225" height="225"></canvas>
+        <div class="temp-cont">
         <span class="location-temp"></span
         ><span class="temperature-unit">°C</span>
+        </div>
       </div>
       <div class="location-info">
         <p class="description"></p>
