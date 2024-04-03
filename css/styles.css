@@ -135,7 +135,7 @@ body::-webkit-scrollbar {
 }
 
 .location-temp {
-  font-size: 3.4rem;
+  font-size: 3.5rem;
 }
 
 .temperature {
@@ -144,7 +144,7 @@ body::-webkit-scrollbar {
   display: flex;
   flex-direction: row;
   align-items: flex-end;
-  margin: 20px 0px 50px 15px;
+  margin: 0px 0px 45px 5px;
   padding-top: 5px;
 }
 
