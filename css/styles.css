@@ -135,7 +135,7 @@ body::-webkit-scrollbar {
 }
 
 .location-temp {
-  font-size: 3.1rem;
+  font-size: 3.9rem;
 }
 
 .temperature {
@@ -144,11 +144,11 @@ body::-webkit-scrollbar {
   display: flex;
   flex-direction: row;
   align-items: flex-end;
-  padding: 25px 10px 20px 10px;
+  margin: 20px 10px 50px 10px;
 }
 
 .temp-cont {
-  transform: translateY(15px);
+  transform: translateY(25px);
 }
 
 .temperature:hover {
@@ -493,20 +493,18 @@ h1 {
     margin: 5px 5px 5px 0;
   }
 
-  .temperature-section {
-    transform: translateY(-15px);
-  }
-
   .temperature {
-    transform: translateX(-10px);
+    margin: 0;
+    padding: 15px 5px 15px 5px;
+    transform: translateY(-20px);
   }
 
   .temp-cont {
-    transform: translateY(10px);
+    transform: translateY(15px);
   }
 
   .temp-cont:hover {
-    transform: translateY(5px);
+    transform: translateY(12px);
   }
 
   .card__summary h3 {
@@ -519,11 +517,12 @@ h1 {
     font-weight: 600;
   }
   .location-temp {
-    font-size: 4rem;
+    font-size: 4.2rem;
   }
 
   .location-info {
-    font-size: 13px;
+    font-size: 0.85rem;
+    font-weight: 600;
   }
 
   .card__pressure {
