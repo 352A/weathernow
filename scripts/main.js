@@ -42,15 +42,6 @@ class App {
     this.dayClouds = document.querySelectorAll(".day-clouds");
     this.dayHumidity = document.querySelectorAll(".day-humidity");
 
-    // Weekdays
-    this.today = document.querySelector(".today");
-    this.tomorrow = document.querySelector(".tomorrow");
-    this.thirdDay = document.querySelector(".third-day");
-    this.fourthDay = document.querySelector(".fourth-day");
-    this.fifthDay = document.querySelector(".fifth-day");
-    this.sixthDay = document.querySelector(".sixth-day");
-    this.seventhDay = document.querySelector(".seventh-day");
-
     // Convert to Fahrenheit
     this.tempElem = document.querySelector(".temperature");
     this.tempElem.addEventListener("click", () => {
@@ -106,11 +97,21 @@ class App {
 
     // map
     const coords = [this.lat, this.long];
-    this.map = L.map("mapid").setView(coords, 12);
+
+    const southWest = L.latLng(-90, -180), // South-west corner (lower-left)
+      northEast = L.latLng(90, 180), // North-east corner (upper-right)
+      bounds = L.latLngBounds(southWest, northEast);
+
+    this.map = L.map("mapid", {
+      minZoom: 3, // Set the minimum zoom level to 10
+      maxBounds: bounds,
+      // continuousWorld: false, // Optional: Set the maximum zoom level if needed
+    }).setView(coords, 11);
 
     L.tileLayer("https://tile.openstreetmap.fr/hot/{z}/{x}/{y}.png", {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      noWrap: true,
     }).addTo(this.map);
 
     let marker = null;
@@ -151,7 +152,6 @@ class App {
 
     // Weather update
     this._weatherUpdate(this.weatherApi);
-    this._weekdays();
 
     // Remove loader when done
     setTimeout(() => {
@@ -205,8 +205,6 @@ class App {
       .then((data) => {
         const {
           temp,
-          clouds,
-          humidity,
           pressure,
           feels_like,
           wind_speed,
@@ -217,6 +215,7 @@ class App {
         } = data.current;
         const { description, icon } = data.current.weather[0];
         const { max, min } = data.daily[0].temp;
+        const { clouds: dailyClouds, humidity: dailyHumidity } = data.daily[0];
         const { timezone } = data;
 
         //Set DOM elements
@@ -249,8 +248,8 @@ class App {
         this.minDeg.textContent = this.temps.min + "°/";
         this.temperatureDescription.textContent = capitalizedDescription;
         this.locationTimezone.textContent = timezone;
-        this.cloudsVisible.textContent = clouds + "%";
-        this.humidityLevel.textContent = humidity + "%";
+        this.cloudsVisible.textContent = dailyClouds + "%";
+        this.humidityLevel.textContent = dailyHumidity + "%";
         this.pressureLevel.textContent = pressure;
         this.windSpeed.textContent = this.temps.windSpeed + " Km/h";
         this.windDegree.textContent = wind_deg + "°";
@@ -302,6 +301,8 @@ class App {
       })
       .then((locationData) => {
         this.locationSpecific.textContent = locationData.name;
+        if (!locationData.name)
+          this.locationSpecific.textContent = "Unknown Location";
       });
 
     function setIcons(icon, iconID) {
@@ -335,7 +336,7 @@ class App {
 
   _updateUI() {
     const appBody = document.querySelector(".app");
-    appBody.innerHTML = `   <div class="card card__main animate__animated animate__zoomInDown">
+    appBody.innerHTML = `<div class="card card__main animate__animated animate__zoomInDown">
     <div class="heading">
       <h2 class="location-name">Loading..</h2>
       <p class="date">Please allow location access in your browser.</p>
@@ -431,39 +432,26 @@ class App {
     </div>
   </div>
 
-<div class="weekdays" data-aos="flip-left"
-data-aos-anchor-placement="top-bottom">
-    <div class="weekdays-container">
-        <!-- today -->
-        <div class="weekday-section card card__weekday">
-            <h4 class="today day-title spaceleft"></h4>
-            <div class="degrees">
-            <span class="banner-text day-min"></span><span class="banner-text day-max"></span>
-        </div>
-        <img
-            style="width: 2.5rem"
-            src="https://openweathermap.org/img/wn/03d.png"
-            alt=""
-        />
-        <p class="banner-text day-clouds spaceleft"></p>
-        <svg
-            stroke="currentColor"
-            fill="currentColor"
-            stroke-width="0"
-            version="1.1"
-            viewBox="0 0 16 16"
-            height="1em"
-            width="1em"
-            xmlns="http://www.w3.org/2000/svg"
-        >
-            <path
-            d="M13.51 7.393c-1.027-2.866-3.205-5.44-5.51-7.393-2.305 1.953-4.482 4.527-5.51 7.393-0.635 1.772-0.698 3.696 0.197 5.397 1.029 1.955 3.104 3.21 5.313 3.21s4.284-1.255 5.313-3.21c0.895-1.701 0.832-3.624 0.197-5.397zM11.543 11.859c-0.684 1.301-2.075 2.141-3.543 2.141-0.861 0-1.696-0.29-2.377-0.791 0.207 0.027 0.416 0.041 0.627 0.041 1.835 0 3.573-1.050 4.428-2.676 0.701-1.333 0.64-2.716 0.373-3.818 0.227 0.44 0.42 0.878 0.576 1.311 0.353 0.985 0.625 2.443-0.084 3.791z"></path>
-        </svg>
-        <p class="banner-text day-humidity spaceleft"></p>
-        </div>
-        <!-- tomorrow -->
-        <div class="weekday-section card card__weekday">
-        <h4 class="tomorrow day-title spaceleft"></h4>
+<div class="weekdays">
+    <div class="weekdays-container" data-aos="flip-left"
+    data-aos-anchor-placement="top-bottom">
+       
+    </div>
+</div>
+          
+
+      <div id="mapid" class="card card__map" data-aos="flip-up"></div>
+    </div>
+  </div>`;
+
+    this._insertWeekdays();
+  }
+
+  _insertWeekdays() {
+    // insert day card
+    const html = `
+    <div class="weekday-section card card__weekday">
+        <h4 class="today day-title spaceleft"></h4>
         <div class="degrees">
         <span class="banner-text day-min"></span><span class="banner-text day-max"></span>
     </div>
@@ -487,152 +475,46 @@ data-aos-anchor-placement="top-bottom">
         d="M13.51 7.393c-1.027-2.866-3.205-5.44-5.51-7.393-2.305 1.953-4.482 4.527-5.51 7.393-0.635 1.772-0.698 3.696 0.197 5.397 1.029 1.955 3.104 3.21 5.313 3.21s4.284-1.255 5.313-3.21c0.895-1.701 0.832-3.624 0.197-5.397zM11.543 11.859c-0.684 1.301-2.075 2.141-3.543 2.141-0.861 0-1.696-0.29-2.377-0.791 0.207 0.027 0.416 0.041 0.627 0.041 1.835 0 3.573-1.050 4.428-2.676 0.701-1.333 0.64-2.716 0.373-3.818 0.227 0.44 0.42 0.878 0.576 1.311 0.353 0.985 0.625 2.443-0.084 3.791z"></path>
     </svg>
     <p class="banner-text day-humidity spaceleft"></p>
-        </div>
-        <!-- third day -->
-        <div class="weekday-section card card__weekday">
-                <h4 class="third-day day-title spaceleft"></h4>
-                <div class="degrees">
-                <span class="banner-text day-min"></span><span class="banner-text day-max"></span>
-                </div>
-            <img
-                style="width: 2.5rem"
-                src="https://openweathermap.org/img/wn/03d.png"
-                alt=""
-            />
-            <p class="banner-text day-clouds spaceleft"></p>
-            <svg
-                stroke="currentColor"
-                fill="currentColor"
-                stroke-width="0"
-                version="1.1"
-                viewBox="0 0 16 16"
-                height="1em"
-                width="1em"
-                xmlns="http://www.w3.org/2000/svg"
-            >
-                <path
-                d="M13.51 7.393c-1.027-2.866-3.205-5.44-5.51-7.393-2.305 1.953-4.482 4.527-5.51 7.393-0.635 1.772-0.698 3.696 0.197 5.397 1.029 1.955 3.104 3.21 5.313 3.21s4.284-1.255 5.313-3.21c0.895-1.701 0.832-3.624 0.197-5.397zM11.543 11.859c-0.684 1.301-2.075 2.141-3.543 2.141-0.861 0-1.696-0.29-2.377-0.791 0.207 0.027 0.416 0.041 0.627 0.041 1.835 0 3.573-1.050 4.428-2.676 0.701-1.333 0.64-2.716 0.373-3.818 0.227 0.44 0.42 0.878 0.576 1.311 0.353 0.985 0.625 2.443-0.084 3.791z"></path>
-            </svg>
-            <p class="banner-text day-humidity spaceleft"></p>
-        </div>
-        <!-- fourth day -->
-        <div class="weekday-section card card__weekday">
-            <h4 class="fourth-day day-title spaceleft"></h4>
-            <div class="degrees">
-            <span class="banner-text day-min"></span><span class="banner-text day-max"></span>
-        </div>
-        <img
-            style="width: 2.5rem"
-            src="https://openweathermap.org/img/wn/03d.png"
-            alt=""
-        />
-        <p class="banner-text day-clouds spaceleft"></p>
-        <svg
-            stroke="currentColor"
-            fill="currentColor"
-            stroke-width="0"
-            version="1.1"
-            viewBox="0 0 16 16"
-            height="1em"
-            width="1em"
-            xmlns="http://www.w3.org/2000/svg"
-        >
-            <path
-            d="M13.51 7.393c-1.027-2.866-3.205-5.44-5.51-7.393-2.305 1.953-4.482 4.527-5.51 7.393-0.635 1.772-0.698 3.696 0.197 5.397 1.029 1.955 3.104 3.21 5.313 3.21s4.284-1.255 5.313-3.21c0.895-1.701 0.832-3.624 0.197-5.397zM11.543 11.859c-0.684 1.301-2.075 2.141-3.543 2.141-0.861 0-1.696-0.29-2.377-0.791 0.207 0.027 0.416 0.041 0.627 0.041 1.835 0 3.573-1.050 4.428-2.676 0.701-1.333 0.64-2.716 0.373-3.818 0.227 0.44 0.42 0.878 0.576 1.311 0.353 0.985 0.625 2.443-0.084 3.791z"></path>
-        </svg>
-        <p class="banner-text day-humidity spaceleft"></p>
-        </div>
-        <!-- fifth day -->
-        <div class="weekday-section card card__weekday">
-            <h4 class="fifth-day day-title spaceleft"></h4>
-            <div class="degrees">
-            <span class="banner-text day-min"></span><span class="banner-text day-max"></span>
-        </div>
-        <img
-            style="width: 2.5rem"
-            src="https://openweathermap.org/img/wn/03d.png"
-            alt=""
-        />
-        <p class="banner-text day-clouds spaceleft"></p>
-        <svg
-            stroke="currentColor"
-            fill="currentColor"
-            stroke-width="0"
-            version="1.1"
-            viewBox="0 0 16 16"
-            height="1em"
-            width="1em"
-            xmlns="http://www.w3.org/2000/svg"
-        >
-            <path
-            d="M13.51 7.393c-1.027-2.866-3.205-5.44-5.51-7.393-2.305 1.953-4.482 4.527-5.51 7.393-0.635 1.772-0.698 3.696 0.197 5.397 1.029 1.955 3.104 3.21 5.313 3.21s4.284-1.255 5.313-3.21c0.895-1.701 0.832-3.624 0.197-5.397zM11.543 11.859c-0.684 1.301-2.075 2.141-3.543 2.141-0.861 0-1.696-0.29-2.377-0.791 0.207 0.027 0.416 0.041 0.627 0.041 1.835 0 3.573-1.050 4.428-2.676 0.701-1.333 0.64-2.716 0.373-3.818 0.227 0.44 0.42 0.878 0.576 1.311 0.353 0.985 0.625 2.443-0.084 3.791z"></path>
-        </svg>
-        <p class="banner-text day-humidity spaceleft"></p>
-        </div>
-        <!-- sixth day -->
-        <div class="weekday-section card card__weekday">
-            <h4 class="sixth-day day-title spaceleft"></h4>
-            <div class="degrees">
-            <span class="banner-text day-min"></span><span class="banner-text day-max"></span>
-        </div>
-        <img
-            style="width: 2.5rem"
-            src="https://openweathermap.org/img/wn/03d.png"
-            alt=""
-        />
-        <p class="banner-text day-clouds spaceleft"></p>
-        <svg
-            stroke="currentColor"
-            fill="currentColor"
-            stroke-width="0"
-            version="1.1"
-            viewBox="0 0 16 16"
-            height="1em"
-            width="1em"
-            xmlns="http://www.w3.org/2000/svg"
-        >
-            <path
-            d="M13.51 7.393c-1.027-2.866-3.205-5.44-5.51-7.393-2.305 1.953-4.482 4.527-5.51 7.393-0.635 1.772-0.698 3.696 0.197 5.397 1.029 1.955 3.104 3.21 5.313 3.21s4.284-1.255 5.313-3.21c0.895-1.701 0.832-3.624 0.197-5.397zM11.543 11.859c-0.684 1.301-2.075 2.141-3.543 2.141-0.861 0-1.696-0.29-2.377-0.791 0.207 0.027 0.416 0.041 0.627 0.041 1.835 0 3.573-1.050 4.428-2.676 0.701-1.333 0.64-2.716 0.373-3.818 0.227 0.44 0.42 0.878 0.576 1.311 0.353 0.985 0.625 2.443-0.084 3.791z"></path>
-        </svg>
-        <p class="banner-text day-humidity spaceleft"></p>
-        </div>
-        <!-- seventh day -->
-        <div class="weekday-section card card__weekday">
-            <h4 class="seventh-day day-title spaceleft"></h4>
-            <div class="degrees">
-            <span class="banner-text day-min"></span><span class="banner-text day-max"></span>
-        </div>
-        <img
-            style="width: 2.5rem"
-            src="https://openweathermap.org/img/wn/03d.png"
-            alt=""
-        />
-        <p class="banner-text day-clouds spaceleft"></p>
-        <svg
-            stroke="currentColor"
-            fill="currentColor"
-            stroke-width="0"
-            version="1.1"
-            viewBox="0 0 16 16"
-            height="1em"
-            width="1em"
-            xmlns="http://www.w3.org/2000/svg"
-        >
-            <path
-            d="M13.51 7.393c-1.027-2.866-3.205-5.44-5.51-7.393-2.305 1.953-4.482 4.527-5.51 7.393-0.635 1.772-0.698 3.696 0.197 5.397 1.029 1.955 3.104 3.21 5.313 3.21s4.284-1.255 5.313-3.21c0.895-1.701 0.832-3.624 0.197-5.397zM11.543 11.859c-0.684 1.301-2.075 2.141-3.543 2.141-0.861 0-1.696-0.29-2.377-0.791 0.207 0.027 0.416 0.041 0.627 0.041 1.835 0 3.573-1.050 4.428-2.676 0.701-1.333 0.64-2.716 0.373-3.818 0.227 0.44 0.42 0.878 0.576 1.311 0.353 0.985 0.625 2.443-0.084 3.791z"></path>
-        </svg>
-        <p class="banner-text day-humidity spaceleft"></p>
-        </div>
-    </div>
-</div>
-      
+    </div>`;
+    const weekdaysContainer = document.querySelector(".weekdays-container");
 
-     
+    for (let i = 0; i < 7; i++) {
+      weekdaysContainer.insertAdjacentHTML("beforeend", html);
+    }
 
-      <div id="mapid" class="card card__map" data-aos="flip-up"></div>
-    </div>
-  </div>
-   `;
+    // insert days
+
+    let today = new Date().getDay();
+    let d = today;
+    const weekday = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+
+    const dayTitle = document.querySelectorAll(".day-title");
+
+    dayTitle.forEach((day) => {
+      if (today === d) {
+        day.textContent = "Today";
+      } else if (d === today + 1) {
+        day.textContent = "Tomorrow";
+      } else {
+        day.textContent = weekday[d];
+      }
+      d++;
+    });
   }
 
   _toFahrenheit() {
@@ -697,34 +579,6 @@ data-aos-anchor-placement="top-bottom">
     const min = a.getMinutes() < 10 ? "0" + a.getMinutes() : a.getMinutes();
     const time = date + " " + month + " " + year + " " + hour + ":" + min;
     return time;
-  }
-
-  _weekdays() {
-    const d = new Date();
-    const weekday = [
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-    ];
-
-    this.today.textContent = "Today";
-    this.tomorrow.textContent = "Tomorrow";
-    this.thirdDay.textContent = weekday[d.getDay() + 2];
-    this.fourthDay.textContent = weekday[d.getDay() + 3];
-    this.fifthDay.textContent = weekday[d.getDay() + 4];
-    this.sixthDay.textContent = weekday[d.getDay() + 5];
-    this.seventhDay.textContent = weekday[d.getDay() + 6];
   }
 }
 
