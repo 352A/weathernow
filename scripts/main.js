@@ -167,8 +167,14 @@ class App {
         "&units=metric&appid=" +
         this.myKey
     )
-      .then((response) => response.json())
-      .then((data) => displayWeather(data));
+      .then((response) => {
+        if (!response.ok) throw new Error("City not found!");
+        return response.json();
+      })
+      .then((data) => displayWeather(data))
+      .catch((err) => {
+        alert(err);
+      });
 
     const displayWeather = (data) => {
       const { lat: latitude, lon: longitude } = data.coord;
